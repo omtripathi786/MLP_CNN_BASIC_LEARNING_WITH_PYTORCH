@@ -1,4 +1,4 @@
-from mlp import Env
+from cnn import Env
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -76,10 +76,10 @@ def test_model(model, test_loader, criterion):
 
     for i in range(10):
         if class_total[i] > 0:
-            print('Test Accuracy of %5s: %2d%% (%2d/%2d)' % (str(i), 100 * class_correct[i] / class_total[i],
+            print('Test Accuracy of %5s: %2d%% (%2d/%2d)' % (Env.classes[i], 100 * class_correct[i] / class_total[i],
                 np.sum(class_correct[i]), np.sum(class_total[i])))
         else:
-            print('Test Accuracy of %5s: N/A (no training examples)' % (class_total[i]))
+            print('Test Accuracy of %5s: N/A (no training examples)' % (Env.classes[i]))
 
     print('\nTest Accuracy (Overall): %2d%% (%2d/%2d)' % (
         100. * np.sum(class_correct) / np.sum(class_total),
@@ -93,17 +93,24 @@ def imshow(img):
 
 def visualize_model_output(model, batch_iter):
     images, labels = batch_iter.next()
+    images, labels = batch_iter.next()
+    images.numpy()
+
+    # move model inputs to cuda, if GPU available
+    if Env.train_on_gpu:
+        images = images.cuda()
+
+    # get sample outputs
     output = model(images)
+    # convert output probabilities to predicted class
     _, preds_tensor = torch.max(output, 1)
     preds = np.squeeze(preds_tensor.numpy()) if not Env.train_on_gpu else np.squeeze(preds_tensor.cpu().numpy())
-    #images = images.numpy()
-    fig = plt.figure(figsize=(25, 4))
-    images = images.numpy()
-    fig = plt.figure(figsize=(25, 4))
+
+    # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(25, 4))
     for idx in np.arange(20):
         ax = fig.add_subplot(2, 20/2, idx+1, xticks=[], yticks=[])
-        ax.imshow(np.squeeze(images[idx]), cmap='gray')
-        ax.set_title("{} ({})".format(str(preds[idx].item()), str(labels[idx].item())),
-                     color=("green" if preds[idx]==labels[idx] else "red"))
+        imshow(images[idx])
+        ax.set_title("{} ({})".format(Env.classes[preds[idx]], Env.classes[labels[idx]]),
+                     color=("green" if preds[idx]==labels[idx].item() else "red"))
     plt.show()
