@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def train_model(model, criterion, optimizer, train_loader, valid_loader):
+def train_model(model, criterion, optimizer, train_loader, valid_loader, model_name='model.pt'):
     valid_loss_min = np.inf
     for epoch in range(1, Env.epochs + 1):
         train_loss = 0.0
@@ -44,7 +44,7 @@ def train_model(model, criterion, optimizer, train_loader, valid_loader):
             print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
                 valid_loss_min,
                 valid_loss))
-            torch.save(model.state_dict(), 'model.pt')
+            torch.save(model.state_dict(), model_name)
             valid_loss_min = valid_loss
 
 
